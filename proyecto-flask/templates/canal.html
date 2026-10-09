@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ canal.nombre }} - Zona Desempleada</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+    <nav>
+        <a href="/">ZONA DESEMPLEADA</a>
+        <a href="/suscripciones/">Suscripciones</a>
+        <a href="/login/">Login</a>
+        <a href="/registro/">Sign Up</a>
+    </nav>
+
+    <main>
+
+        <h1>{{ canal.nombre }}</h1>
+
+        <p>{{ canal.descripcion }}</p>
+
+        <br>
+
+        <a class="boton" href="/suscribirse/{{ canal.id }}">
+            Suscribirse
+        </a>
+
+    </main>
+
+</body>
+</html>

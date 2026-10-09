@@ -1,0 +1,39 @@
+
+services:
+  postgres:
+    image: postgres:17
+    container_name: postgres
+    environment:
+      POSTGRES_DB: mi_base_datos
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+    volumes:
+      - datos_postgres_antiguos:/var/lib/postgresql/data
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@zonadesempleada.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+
+  flask:
+    build: .
+    container_name: flask-app
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    depends_on:
+      - postgres
+
+volumes:
+  datos_postgres_antiguos:
+    external: true
+    name: 9724b339372cc42b0b5899f5c97ac5b27212d5168f637c0867ce47f08e10b90b

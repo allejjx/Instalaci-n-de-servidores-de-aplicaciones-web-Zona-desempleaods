@@ -1,0 +1,52 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis suscripciones - Zona Desempleada</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <nav>
+        <a href="/">ZONA DESEMPLEADA</a>
+
+        <div>
+            <a href="/suscripciones/">Suscripciones</a>
+
+            {% if session.get('usuario') %}
+                <a href="/logout/">Log Out</a>
+            {% else %}
+                <a href="/login/">Login</a>
+                <a href="/registro/">Sign Up</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <main>
+        <h2 class="titulo-suscripciones">Mis suscripciones</h2>
+
+        <div class="lista-suscripciones">
+            {% for canal in canales %}
+                <div class="tarjeta-suscripcion">
+                    <h3>{{ canal.nombre }}</h3>
+                    <p>{{ canal.descripcion }}</p>
+
+                    <form action="{{ url_for('cancelar_suscripcion', id=canal.id) }}"
+                          method="POST">
+                        <button type="submit" class="boton-cancelar">
+                            Cancelar suscripción
+                        </button>
+                    </form>
+                </div>
+            {% else %}
+                <p class="sin-suscripciones">
+                    Todavía no estás suscrito a ningún canal.
+                </p>
+            {% endfor %}
+        </div>
+    </main>
+
+</body>
+</html>

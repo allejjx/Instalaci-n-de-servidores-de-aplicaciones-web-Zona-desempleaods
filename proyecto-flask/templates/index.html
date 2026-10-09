@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Zona Desempleada</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+    <nav>
+        <a href="/">ZONA DESEMPLEADA</a>
+
+        <div>
+            <a href="/suscripciones/">Suscripciones</a>
+
+            {% if session.get('usuario') %}
+                <a href="/logout/">Log Out</a>
+            {% else %}
+                <a href="/login/">Login</a>
+                <a href="/registro/">Sign Up</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <main>
+
+        <h1>Zona Desempleada</h1>
+
+        <p class="descripcion">
+            Tu blog de videojuegos, cine, IT y deportes.
+        </p>
+
+        <h2>Nuestros canales</h2>
+
+        <div class="canales">
+
+            {% for canal in canales %}
+
+                <div class="canal">
+
+                    <h3>
+                        <a href="/canal/{{ canal.id }}">
+                            {{ canal.nombre }}
+                        </a>
+                    </h3>
+
+                    <p>{{ canal.descripcion }}</p>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    </main>
+
+</body>
+</html>
+
