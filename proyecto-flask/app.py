@@ -1,3 +1,4 @@
+
 from flask import Flask, render_template, request, redirect, session
 import psycopg
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -38,14 +39,6 @@ def enviar_correo(destinatario, nombre_canal):
         servidor.send_message(mensaje)
 
 
-@app.route('/probar-bd/')
-def probar_bd():
-    with conectar_bd() as conn:
-        resultado = conn.execute('SELECT 1').fetchone()
-
-    return f'Conexión correcta con PostgreSQL: {resultado[0]}'
-
-
 canales = [
     {
         'id': 1,
@@ -68,6 +61,14 @@ canales = [
         'descripcion': 'Noticias y actualidad del mundo del deporte.'
     }
 ]
+
+
+@app.route('/probar-bd/')
+def probar_bd():
+    with conectar_bd() as conn:
+        resultado = conn.execute('SELECT 1').fetchone()
+
+    return f'Conexión correcta con PostgreSQL: {resultado[0]}'
 
 
 @app.route('/')
@@ -96,7 +97,7 @@ def registro():
                 (nombre, email, password_hash)
             )
     except psycopg.errors.UniqueViolation:
-        return 'Este email ya está registrado', 409
+        return 'Este email ya existe', 409
 
     session['usuario'] = email
     return redirect('/')
@@ -147,10 +148,12 @@ def suscribirse(id):
     if 'usuario' not in session:
         return redirect('/login/')
 
-    canal_encontrado = next(
-        (canal for canal in canales if canal['id'] == id),
-        None
-    )
+    canal_encontrado = None
+
+    for canal in canales:
+        if canal['id'] == id:
+            canal_encontrado = canal
+            break
 
     if canal_encontrado is None:
         return 'Canal no encontrado', 404
@@ -158,7 +161,8 @@ def suscribirse(id):
     with conectar_bd() as conn:
         suscripcion = conn.execute(
             '''
-            SELECT * FROM suscripciones
+            SELECT *
+            FROM suscripciones
             WHERE usuario_email = %s AND canal_id = %s
             ''',
             (session['usuario'], id)
@@ -180,7 +184,7 @@ def suscribirse(id):
         canal_encontrado['nombre']
     )
 
-    return 'Te has suscrito correctamente. Revisa tu correo.'
+    return 'Te has suscrito correctamente. Revisa tu correo tendrás un aviso.'
 
 
 @app.route('/suscripciones/')
@@ -191,7 +195,8 @@ def suscripciones():
     with conectar_bd() as conn:
         filas = conn.execute(
             '''
-            SELECT canal_id FROM suscripciones
+            SELECT canal_id
+            FROM suscripciones
             WHERE usuario_email = %s
             ''',
             (session['usuario'],)
