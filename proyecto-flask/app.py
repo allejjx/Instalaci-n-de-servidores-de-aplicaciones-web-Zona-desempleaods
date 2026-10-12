@@ -5,6 +5,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import smtplib
 from email.message import EmailMessage
 import os
+import json
 
 app = Flask(__name__)
 app.secret_key = 'zona-desempleada-clave'
@@ -20,6 +21,15 @@ def conectar_bd():
     )
 
 
+def mostrar_alerta(mensaje, destino):
+    return f"""
+    <script>
+        alert({json.dumps(mensaje)});
+        window.location.href = {json.dumps(destino)};
+    </script>
+    """
+
+
 def enviar_correo(destinatario, nombre_canal):
     mensaje = EmailMessage()
     mensaje['Subject'] = f'Te has suscrito al canal {nombre_canal}'
@@ -33,7 +43,7 @@ def enviar_correo(destinatario, nombre_canal):
 
     with smtplib.SMTP_SSL('smtp.gmail.com', 465) as servidor:
         servidor.login(
-            'jugadordefortnite41@gmail.com',
+            mensaje['From'],
             app.config['GMAIL_APP_PASSWORD']
         )
         servidor.send_message(mensaje)
@@ -97,7 +107,10 @@ def registro():
                 (nombre, email, password_hash)
             )
     except psycopg.errors.UniqueViolation:
-        return 'Este email ya existe', 409
+        return mostrar_alerta(
+            'Este email ya existe',
+            '/registro/'
+        )
 
     session['usuario'] = email
     return redirect('/')
@@ -125,7 +138,10 @@ def login():
         session['usuario'] = usuario[1]
         return redirect('/')
 
-    return 'Email o contraseña incorrectos', 401
+    return mostrar_alerta(
+        'Email o contraseña incorrectos',
+        '/login/'
+    )
 
 
 @app.route('/logout/')
@@ -169,7 +185,10 @@ def suscribirse(id):
         ).fetchone()
 
         if suscripcion:
-            return 'Ya estás suscrito a este canal.'
+            return mostrar_alerta(
+                'Ya estás suscrito a este canal',
+                f'/canal/{id}'
+            )
 
         conn.execute(
             '''
@@ -179,12 +198,16 @@ def suscribirse(id):
             (session['usuario'], id)
         )
 
+
     enviar_correo(
         session['usuario'],
         canal_encontrado['nombre']
     )
 
-    return 'Te has suscrito correctamente. Revisa tu correo tendrás un aviso.'
+    return mostrar_alerta(
+        'Te has suscrito correctamente. Revisa tu correo.',
+        f'/canal/{id}'
+    )
 
 
 @app.route('/suscripciones/')
@@ -237,11 +260,7 @@ def probar_correo():
     if 'usuario' not in session:
         return redirect('/login/')
 
-    enviar_correo(
-        session['usuario'],
-        'Videojuegos'
-    )
-
+    enviar_correo(session['usuario'], 'Videojuegos')
     return 'Correo de prueba enviado correctamente'
 
 
